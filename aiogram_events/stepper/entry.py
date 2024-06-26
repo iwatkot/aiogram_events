@@ -1,4 +1,4 @@
-from functools import partial
+from types import MethodType
 from typing import Callable
 
 from aiogram.types import CallbackQuery, Message
@@ -29,7 +29,7 @@ class Entry:
         return self.base_type(results[self.title])
 
     def replace_validator(self, validator: Callable) -> None:
-        self.validate_answer = partial(validator, self)
+        self.validate_answer = MethodType(validator, self)  # type: ignore[method-assign]
 
     @property
     def title(self) -> str:
