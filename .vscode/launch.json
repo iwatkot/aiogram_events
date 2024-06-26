@@ -1,0 +1,63 @@
+{
+    "version": "0.2.0",
+    "configurations": [
+        {
+            "name": "Python script",
+            "type": "debugpy",
+            "request": "launch",
+            "program": "tests/tests.py",
+            "console": "integratedTerminal",
+            "justMyCode": true,
+            "env": {
+                "PYTHONPATH": "${workspaceFolder}:${PYTHONPATH}",
+                "LOG_LEVEL": "DEBUG",
+            }
+        },
+        {
+            "name": "Current File",
+            "type": "debugpy",
+            "request": "launch",
+            "program": "${file}",
+            "console": "integratedTerminal",
+            "justMyCode": true,
+            "env": {
+              "PYTHONPATH": "${workspaceFolder}:${PYTHONPATH}"
+            }
+        },
+        {
+            "name": "mypy",
+            "type": "debugpy",
+            "request": "launch",
+            "preLaunchTask": "mypy",
+            "program": "${workspaceFolder}/tests/dummy.py"
+        },
+        {
+            "name": "pytest",
+            "type": "debugpy",
+            "request": "launch",
+            "preLaunchTask": "pytest",
+            "program": "${workspaceFolder}/tests/dummy.py"
+        },
+        {
+            "name": "pytest-cov",
+            "type": "debugpy",
+            "request": "launch",
+            "preLaunchTask": "pytest-cov",
+            "program": "${workspaceFolder}/tests/dummy.py"
+        },
+        {
+            "name": "pylint",
+            "type": "debugpy",
+            "request": "launch",
+            "preLaunchTask": "pylint",
+            "program": "${workspaceFolder}/tests/dummy.py"
+        },
+        {
+            "name": "pdoc",
+            "type": "debugpy",
+            "request": "launch",
+            "preLaunchTask": "pdoc",
+            "program": "${workspaceFolder}/tests/dummy.py"
+        }
+    ]
+}
