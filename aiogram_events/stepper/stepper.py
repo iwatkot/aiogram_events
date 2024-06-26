@@ -1,6 +1,6 @@
 import asyncio
 import uuid
-from typing import Type
+from typing import Any, Type
 
 from aiogram.fsm.context import FSMContext
 from aiogram.fsm.state import StatesGroup
@@ -30,7 +30,7 @@ class Stepper:
         self,
         content: Message | CallbackQuery,
         state: FSMContext,
-        entries: list[Type[Entry]],
+        entries: list[Entry],
         complete: str,
         main_menu: str | None = None,
         cancel: str | None = None,
@@ -64,7 +64,7 @@ class Stepper:
 
         # Results are stored in a dictionary and are only available after the Stepper is closed.
         # Event is used to notify the results are ready.
-        self._results: dict[str, str] | None = None
+        self._results: dict[str, str | int] | None = None
         self.results_ready = asyncio.Event()
 
     @property
@@ -152,7 +152,7 @@ class Stepper:
         return [f"{self.id}{entry.title}" for entry in self.entries]
 
     @property
-    def form(self) -> StatesGroup:
+    def form(self) -> Type[StatesGroup]:
         """Returns the StatesGroup object of the Stepper, which is used to register the Stepper with aiogram.
 
         Returns:
@@ -179,11 +179,11 @@ class Stepper:
         self._step = value
 
     @property
-    def state_code(self) -> str:
+    def state_code(self) -> str | None:
         """Returns the string representation of the current state of the Stepper.
 
         Returns:
-            str: The string representation of the current state of the Stepper.
+            str: The string representation of the current state of the Stepper or None.
         """
         return self._state_code
 
@@ -197,7 +197,7 @@ class Stepper:
         self._state_code = value
 
     @property
-    def results(self) -> dict[str, str]:
+    def results(self) -> dict[str, int | str] | None:
         """Returns the results of the Stepper, which are stored in a dictionary.
         The results are only available after the Stepper is closed and the results_ready event is set.
 
@@ -207,7 +207,7 @@ class Stepper:
         return self._results
 
     @results.setter
-    def results(self, value: dict[str, str]) -> None:
+    def results(self, value: dict[str, int | str]) -> None:
         """Sets the results of the Stepper to a new value and sets the results_ready event.
 
         Args:
@@ -273,6 +273,8 @@ class Stepper:
         self.state_code = await self.state.get_state()
         self.state = state
         self.content = content
+        if not self.data:
+            return
 
         await self.state.update_data(**self.data)
 
@@ -292,7 +294,7 @@ class Stepper:
         data = {key: value for key, value in data.items() if value != self.skip}
         self.results = data
 
-    async def get_results(self) -> dict[str, str]:
+    async def get_results(self) -> dict[str, int | str] | None:
         """Waits for the results to be ready and returns them.
 
         Returns:
@@ -340,16 +342,18 @@ class Stepper:
         return text
 
     @property
-    def keyword(self) -> str:
+    def keyword(self) -> str | None:
         """Returns the keyword of the current Entry object, it's used to save the data in the state.
 
         Returns:
             str: The keyword of the current Entry object.
         """
+        if not self.state_code:
+            return None
         return self.state_code.split(":")[1]
 
     @property
-    def details(self) -> str:
+    def details(self) -> str | None:
         """Returns the content of the current content object.
         For Message objects, it's the text of the message, for CallbackQuery objects, it's the data of the query.
 
@@ -364,13 +368,15 @@ class Stepper:
             return self.content.data
 
     @property
-    def data(self) -> dict[str, str]:
+    def data(self) -> dict[str, Any] | None:
         """Returns the pair of key-value data, where the key is the keyword of the state
         and the value is the content of the current content object.
 
         Returns:
             dict[str, str]: The pair of key-value data.
         """
+        if not self.keyword or not self.details:
+            return None
         return {self.keyword: self.details}
 
     def match_step(self) -> None:

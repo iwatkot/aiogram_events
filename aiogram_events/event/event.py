@@ -1,6 +1,3 @@
-from abc import ABC, abstractmethod
-from typing import Type
-
 from aiogram import F, MagicFilter
 from aiogram.fsm.context import FSMContext
 from aiogram.types import CallbackQuery, Message, User
@@ -10,17 +7,15 @@ from aiogram_events.stepper.stepper import Stepper
 from aiogram_events.utils.utils import reply_keyboard
 
 
-class BaseEvent(ABC):
-    @abstractmethod
+class BaseEvent:
     def is_admin(self, user_id: int) -> bool:
-        pass
+        raise NotImplementedError
 
-    @abstractmethod
     def is_moderator(self, user_id: int) -> bool:
-        pass
+        raise NotImplementedError
 
     _answer: str | None = None
-    _entries: list[Type[Entry]] | None = None
+    _entries: list[Entry] | None = None
     _complete: str | None = None
     _menu: list[str] | None = None
     _admin_menu: list[str] | None = None
@@ -65,7 +60,7 @@ class BaseEvent(ABC):
         return self._answer
 
     @property
-    def entries(self) -> list[Type[Entry]] | None:
+    def entries(self) -> list[Entry] | None:
         return self._entries
 
     @property
@@ -108,6 +103,8 @@ class BaseEvent(ABC):
     async def process(self) -> None:
         """Process the event, which may be reimplemented in the child class to handle some specific logic."""
         if self.entries:
+            if not self.complete:
+                raise ValueError("Complete step not set for the event.")
             stepper = Stepper(
                 self.content,
                 self.state,
@@ -153,7 +150,9 @@ class CallbackEvent(BaseEvent):
     def answers(self) -> list[str | int] | str | int | None:
         if not self.entries:
             return None
+        if not self.results:
+            return None
         answers = []
         for entry in self.entries:
-            answers.append(entry.get_answer(self.results))  # type: ignore[call-arg, arg-type]
+            answers.append(entry.get_answer(self.results))
         return answers if len(answers) > 1 else answers[0]

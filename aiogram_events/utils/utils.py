@@ -1,4 +1,4 @@
-# import os
+from typing import Type
 
 from aiogram.fsm.state import State, StatesGroup
 from aiogram.types import (
@@ -45,13 +45,13 @@ class FormMeta(type):
         return super().__new__(cls, name, bases, attrs)
 
 
-class CombinedMeta(FormMeta, type(StatesGroup)):
+class CombinedMeta(FormMeta, type(StatesGroup)):  # type: ignore
     """Since the StatesGroup already has it's metaclass, we need to combine it with our metaclass."""
 
     pass
 
 
-def get_form(steps: list[str]) -> StatesGroup:
+def get_form(steps: list[str]) -> Type[StatesGroup]:
     """Returns a new class, with attributes as State objects.
 
     Args:
@@ -61,7 +61,7 @@ def get_form(steps: list[str]) -> StatesGroup:
         StatesGroup: New class with steps as State objects
     """
 
-    class Form(StatesGroup, metaclass=CombinedMeta, steps=steps):
+    class Form(StatesGroup, metaclass=CombinedMeta, steps=steps):  # type: ignore
         pass
 
     return Form

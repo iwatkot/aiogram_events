@@ -1,11 +1,10 @@
-from abc import ABC, abstractmethod
 from functools import partial
 from typing import Callable
 
 from aiogram.types import CallbackQuery, Message
 
 
-class Entry(ABC):
+class Entry:
     def __init__(
         self,
         title: str,
@@ -23,15 +22,14 @@ class Entry(ABC):
         self._skippable = skippable
         self._options = options
 
-    @abstractmethod
     async def validate_answer(self, content: Message | CallbackQuery) -> bool:
-        pass
+        raise NotImplementedError
 
-    def get_answer(self, results: dict[str, str]) -> str | int:
+    def get_answer(self, results: dict[str, int | str]) -> str | int:
         return self.base_type(results[self.title])
 
     def replace_validator(self, validator: Callable) -> None:
-        self.validate_answer = partial(validator, self)  # type: ignore[method-assign]
+        self.validate_answer = partial(validator, self)
 
     @property
     def title(self) -> str:
@@ -100,9 +98,9 @@ class TextEntry(Entry):
         Returns:
             bool: True if the answer is a string, False otherwise
         """
-        content = content.text if isinstance(content, Message) else content.data
+        parsed_content = content.text if isinstance(content, Message) else content.data
         try:
-            assert isinstance(content, str)
+            assert isinstance(parsed_content, str)
             return True
         except AssertionError:
             return False

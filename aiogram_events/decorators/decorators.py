@@ -1,4 +1,4 @@
-from typing import Callable
+from typing import Callable, Type
 
 from aiogram import Router
 from aiogram.fsm.context import FSMContext
@@ -14,7 +14,7 @@ router = Router()
 def form(steps: list[str]) -> Callable:
     attributes = [getattr(get_form(steps), step) for step in steps]
 
-    def decorator(func: callable) -> Callable:
+    def decorator(func: Callable) -> Callable:
         for attr in reversed(attributes):
             func = router.message(attr)(func)
         return func
@@ -22,13 +22,13 @@ def form(steps: list[str]) -> Callable:
     return decorator
 
 
-def text_event(event: TextEvent) -> Callable:
+def text_event(event: Type[TextEvent]) -> Callable:
 
     def decorator(func: Callable) -> Callable:
 
         @router.message(event.button())
         async def wrapper(message: Message, state: FSMContext) -> None:
-            return await func(event(message, state))  # type: ignore[operator]
+            return await func(event(message, state))
 
         return wrapper
 
@@ -49,14 +49,14 @@ def text_events(events: TextEventGroup) -> Callable:
     return decorator
 
 
-def callback_event(callback: CallbackEvent) -> Callable:
+def callback_event(callback: Type[CallbackEvent]) -> Callable:
 
     def decorator(func: Callable) -> Callable:
 
         @router.callback_query(callback.callback())
         async def wrapper(query: CallbackQuery, state: FSMContext) -> None:
 
-            return await func(callback(query, state))  # type: ignore[operator]
+            return await func(callback(query, state))
 
         return wrapper
 
