@@ -1,1 +1,1 @@
-from aiogram_events.stepper.entry import Entry
+from aiogram_events.stepper.entry import Entry, TextEntry

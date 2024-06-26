@@ -3,17 +3,11 @@ from typing import Type
 
 from aiogram import F, MagicFilter
 from aiogram.fsm.context import FSMContext
-from aiogram.types import (
-    CallbackQuery,
-    InlineKeyboardButton,
-    InlineKeyboardMarkup,
-    KeyboardButton,
-    Message,
-    ReplyKeyboardMarkup,
-    User,
-)
+from aiogram.types import CallbackQuery, Message, User
 
 from aiogram_events.stepper import Entry
+from aiogram_events.stepper.stepper import Stepper
+from aiogram_events.utils.utils import reply_keyboard
 
 
 class BaseEvent(ABC):
@@ -109,45 +103,19 @@ class BaseEvent(ABC):
     async def reply(self) -> None:
         if not self.answer:
             return
-        await self.content.answer(self.answer, reply_markup=self.reply_keyboard(self.role_menu))
-
-    @staticmethod
-    def inline_keyboard(data: dict[str, str] | None = None) -> InlineKeyboardMarkup | None:
-        if not data:
-            return None
-        keyboard = [
-            [InlineKeyboardButton(text=text, callback_data=data)] for text, data in data.items()
-        ]
-        return InlineKeyboardMarkup(inline_keyboard=keyboard)
-
-    @staticmethod
-    def reply_keyboard(buttons: list[str] | None = None) -> ReplyKeyboardMarkup | None:
-        if not buttons:
-            return None
-        per_row = BaseEvent.buttons_per_row(len(buttons))
-        raw_keyboard = [buttons[i : i + per_row] for i in range(0, len(buttons), per_row)]
-        keyboard = [[KeyboardButton(text=button) for button in row] for row in raw_keyboard]
-        return ReplyKeyboardMarkup(keyboard=keyboard, resize_keyboard=True)
-
-    @staticmethod
-    def buttons_per_row(buttons: int) -> int:
-        if buttons % 3 == 0 or buttons % 2 == 0:
-            return buttons // 2 if buttons > 2 else buttons
-        else:
-            return buttons // 2 + buttons % 2
+        await self.content.answer(self.answer, reply_markup=reply_keyboard(self.role_menu))
 
     async def process(self) -> None:
         """Process the event, which may be reimplemented in the child class to handle some specific logic."""
         if self.entries:
-            pass
-            # stepper = Stepper(
-            #     self.content,
-            #     self.state,
-            #     entries=self.entries,
-            #     complete=self.complete,
-            # )
-            # await stepper.start()
-            # self._results = await stepper.get_results()
+            stepper = Stepper(
+                self.content,
+                self.state,
+                entries=self.entries,
+                complete=self.complete,
+            )
+            await stepper.start()
+            self._results = await stepper.get_results()
 
 
 class TextEvent(BaseEvent):
@@ -187,5 +155,5 @@ class CallbackEvent(BaseEvent):
             return None
         answers = []
         for entry in self.entries:
-            answers.append(entry.get_answer(self.results))
+            answers.append(entry.get_answer(self.results))  # type: ignore[call-arg, arg-type]
         return answers if len(answers) > 1 else answers[0]

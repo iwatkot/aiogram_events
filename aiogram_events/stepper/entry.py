@@ -78,3 +78,31 @@ class Entry(ABC):
     @options.setter
     def options(self, value: list[str]) -> None:
         self._options = value
+
+
+class TextEntry(Entry):
+    base_type = str
+
+    """Class to represent a text entry in the form.
+
+    Args:
+        title (str): Title of the entry
+        incorrect (str): Message to display when the answer is incorrect
+        description (str, optional): Description of the entry. Defaults to None.
+    """
+
+    async def validate_answer(self, content: Message | CallbackQuery) -> bool:
+        """Checks if the answer is a string.
+
+        Args:
+            content (str): Answer to the entry
+
+        Returns:
+            bool: True if the answer is a string, False otherwise
+        """
+        content = content.text if isinstance(content, Message) else content.data
+        try:
+            assert isinstance(content, str)
+            return True
+        except AssertionError:
+            return False
