@@ -1,13 +1,16 @@
 import asyncio
 import uuid
-from typing import Any, Type
+from typing import Any, Callable, Type
 
+from aiogram import Router
 from aiogram.fsm.context import FSMContext
 from aiogram.fsm.state import StatesGroup
 from aiogram.types import CallbackQuery, Message
 
 from aiogram_events.stepper.entry import Entry
 from aiogram_events.utils.utils import get_form, reply_keyboard
+
+stepper_router = Router()
 
 
 class Stepper:
@@ -234,8 +237,6 @@ class Stepper:
         if self.step == 0:
             await self.forward()
             return await self.register()
-        else:
-            raise ValueError("Stepper is already started, use forward() method to move forward")
 
     async def forward(self) -> None:
         """Moves the Stepper to the next step and sends the answer to the user."""
@@ -387,9 +388,8 @@ class Stepper:
 
     async def register(self):
         """Registers the Stepper with aiogram and starts the form."""
-        from aiogram_events.decorators.decorators import form
 
-        @form(self.steps)
+        @self.form_handlers(self.steps)
         async def steps(content: Message | CallbackQuery, state: FSMContext) -> None:
             if not await self.validate(content):
                 return
@@ -401,3 +401,14 @@ class Stepper:
                 return
 
             await self.forward()
+
+    @staticmethod
+    def form_handlers(steps: list[str]) -> Callable:
+        attributes = [getattr(get_form(steps), step) for step in steps]
+
+        def decorator(func: Callable) -> Callable:
+            for attr in reversed(attributes):
+                func = stepper_router.message(attr)(func)
+            return func
+
+        return decorator

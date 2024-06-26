@@ -6,20 +6,8 @@ from aiogram.types import CallbackQuery, Message
 
 from aiogram_events.event.event import CallbackEvent, TextEvent
 from aiogram_events.event.event_group import CallbackEventGroup, TextEventGroup
-from aiogram_events.utils.utils import get_form
 
 router = Router()
-
-
-def form(steps: list[str]) -> Callable:
-    attributes = [getattr(get_form(steps), step) for step in steps]
-
-    def decorator(func: Callable) -> Callable:
-        for attr in reversed(attributes):
-            func = router.message(attr)(func)
-        return func
-
-    return decorator
 
 
 def text_event(event: Type[TextEvent]) -> Callable:
