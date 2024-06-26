@@ -7,7 +7,7 @@ from aiogram.fsm.context import FSMContext
 from aiogram.fsm.state import StatesGroup
 from aiogram.types import CallbackQuery, Message
 
-from aiogram_events.stepper.entry import Entry
+from aiogram_events.stepper.entry import Entry, FileEntry
 from aiogram_events.utils.utils import get_form, reply_keyboard
 
 stepper_router = Router()
@@ -282,7 +282,6 @@ class Stepper:
     async def close(self) -> None:
         """Closes the Stepper and saves the results."""
         await self.process_data()
-        # await Helper.force_answer(self.content, self.complete, buttons=[self.main_menu])
         await self.content.answer(self.complete, reply_markup=reply_keyboard([self.main_menu]))
         await self.state.clear()
 
@@ -316,7 +315,6 @@ class Stepper:
             buttons.append(self.skip)
         buttons.append(self.cancel)
         text = self.prepare_text()
-        # await Helper.force_answer(self.content, text, buttons)
         await self.content.answer(text, reply_markup=reply_keyboard(buttons))
 
     @property
@@ -361,8 +359,8 @@ class Stepper:
         Returns:
             str: The content of the current content object.
         """
-        # if isinstance(self.previous_entry, FileEntry):
-        #     return self.content.document.file_id
+        if isinstance(self.previous_entry, FileEntry):
+            return self.content.document.file_id
         if isinstance(self.content, Message):
             return self.content.text
         elif isinstance(self.content, CallbackQuery):
