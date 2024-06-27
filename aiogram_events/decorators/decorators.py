@@ -222,8 +222,6 @@ def admin_only(func: Callable) -> Callable:
         """
         if event.is_admin:  # type: ignore[truthy-function]
             return await func(event, *args, **kwargs)
-        else:
-            return None
 
     return wrapper
 
@@ -264,7 +262,5 @@ def moderator_admin_only(func: Callable) -> Callable:
         """
         if event.is_moderator or event.is_admin:  # type: ignore[truthy-function]
             return await func(event, *args, **kwargs)
-        else:
-            return None
 
     return wrapper
