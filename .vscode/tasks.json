@@ -4,19 +4,19 @@
         {
             "label": "mypy",
             "type": "shell",
-            "command": "mypy py3xui",
+            "command": "mypy aiogram_events",
             "problemMatcher": []
         },
         {
             "label": "pylint",
             "type": "shell",
-            "command": "pylint py3xui",
+            "command": "pylint aiogram_events",
             "problemMatcher": []
         },
         {
             "label": "pdoc",
             "type": "shell",
-            "command": "pdoc --docformat markdown --output-dir ./docs py3xui && open docs/index.html",
+            "command": "pdoc --docformat markdown --output-dir ./docs aiogram_events && open docs/index.html",
             "problemMatcher": []
         }
     ]
