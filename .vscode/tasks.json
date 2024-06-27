@@ -12,12 +12,6 @@
             "type": "shell",
             "command": "pylint aiogram_events",
             "problemMatcher": []
-        },
-        {
-            "label": "pdoc",
-            "type": "shell",
-            "command": "pdoc --docformat markdown --output-dir ./docs aiogram_events && open docs/index.html",
-            "problemMatcher": []
         }
     ]
 }

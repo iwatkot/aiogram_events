@@ -1,7 +1,7 @@
 #!/bin/bash
 
 # The directory containing the Python files
-src_dir="py3xui"
+src_dir="aiogram_events"
 
 # Find all subdirectories in the source directory
 find "$src_dir" -type d | while read -r dir; do
