@@ -7,12 +7,17 @@ from aiogram_events.stepper.stepper import Stepper
 from aiogram_events.utils.utils import reply_keyboard
 
 
+class Team:
+    admins: list[int] = []
+    moderators: list[int] = []
+
+
 class BaseEvent:
     def is_admin(self, user_id: int) -> bool:
-        raise NotImplementedError
+        return user_id in Team.admins
 
     def is_moderator(self, user_id: int) -> bool:
-        raise NotImplementedError
+        return user_id in Team.moderators
 
     _answer: str | None = None
     _entries: list[Entry] | None = None
@@ -81,11 +86,11 @@ class BaseEvent:
 
     @property
     def role_menu(self) -> list[str] | None:
-        return (
-            self.admin_menu
-            if self.by_admin
-            else self.moderator_menu if self.by_moderator else self.menu
-        )
+        if self.by_admin and self.admin_menu is not None:
+            return self.admin_menu
+        if self.by_moderator and self.moderator_menu is not None:
+            return self.moderator_menu
+        return self.menu
 
     @property
     def results(self) -> dict[str, int | str] | None:
@@ -100,16 +105,20 @@ class BaseEvent:
             return
         await self.content.answer(self.answer, reply_markup=reply_keyboard(self.role_menu))
 
-    async def process(self) -> None:
+    async def process(self, **kwargs) -> None:
         """Process the event, which may be reimplemented in the child class to handle some specific logic."""
         if self.entries:
             if not self.complete:
                 raise ValueError("Complete step not set for the event.")
+
             stepper = Stepper(
                 self.content,
                 self.state,
                 entries=self.entries,
                 complete=self.complete,
+                main_menu=kwargs.get("main_menu", None),
+                cancel=kwargs.get("cancel", None),
+                skip=kwargs.get("skip", None),
             )
             await stepper.start()
             self._results = await stepper.get_results()

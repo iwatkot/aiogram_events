@@ -7,10 +7,10 @@ from aiogram.fsm.context import FSMContext
 from aiogram.fsm.state import StatesGroup
 from aiogram.types import CallbackQuery, Message
 
-from aiogram_events.stepper.entry import Entry, FileEntry
+from aiogram_events.stepper.entry import Entry  # , FileEntry
 from aiogram_events.utils.utils import get_form, reply_keyboard
 
-stepper_router = Router()
+router = Router()
 
 
 class Stepper:
@@ -359,8 +359,8 @@ class Stepper:
         Returns:
             str: The content of the current content object.
         """
-        if isinstance(self.previous_entry, FileEntry):
-            return self.content.document.file_id
+        # if isinstance(self.previous_entry, FileEntry):
+        #     return self.content.document.file_id
         if isinstance(self.content, Message):
             return self.content.text
         elif isinstance(self.content, CallbackQuery):
@@ -406,7 +406,7 @@ class Stepper:
 
         def decorator(func: Callable) -> Callable:
             for attr in reversed(attributes):
-                func = stepper_router.message(attr)(func)
+                func = router.message(attr)(func)
             return func
 
         return decorator

@@ -7,11 +7,13 @@ from aiogram.types import CallbackQuery, Message
 
 
 class Entry:
+    _base_type: type | None = None
+
     def __init__(
         self,
         title: str,
         incorrect: str,
-        base_type: type,
+        # base_type: type,
         description: str | None = None,
         skippable: bool = False,
         options: list[str] | None = None,
@@ -19,7 +21,7 @@ class Entry:
     ):
         self._title = title
         self._incorrect = incorrect
-        self._base_type = base_type
+        # self._base_type = base_type
         self._description = description
         self._skippable = skippable
         self._options = options
@@ -28,10 +30,9 @@ class Entry:
         raise NotImplementedError
 
     def get_answer(self, results: dict[str, int | str]) -> str | int:
+        if self.base_type is None:
+            raise ValueError("Base type not provided")
         return self.base_type(results[self.title])
-
-    def replace_validator(self, validator: Callable) -> None:
-        self.validate_answer = MethodType(validator, self)  # type: ignore[method-assign]
 
     @property
     def title(self) -> str:
@@ -50,7 +51,7 @@ class Entry:
         self._incorrect = value
 
     @property
-    def base_type(self) -> type:
+    def base_type(self) -> type | None:
         return self._base_type
 
     @property
@@ -128,9 +129,11 @@ class NumberEntry(Entry):
         Returns:
             bool: True if the answer is a number, False otherwise
         """
-        content = content.text if isinstance(content, Message) else content.data
+        parsed_content = content.text if isinstance(content, Message) else content.data
+        if not parsed_content:
+            return False
         try:
-            assert content.isdigit()
+            assert parsed_content.isdigit()
             return True
         except AssertionError:
             return False
@@ -156,11 +159,13 @@ class DateEntry(Entry):
         Returns:
             bool: True if the answer is a date, False otherwise
         """
-        content = content.text if isinstance(content, Message) else content.data
+        parsed_content = content.text if isinstance(content, Message) else content.data
+        if not parsed_content:
+            return False
         date_formats = ["%Y-%m-%d", "%d-%m-%Y", "%m-%d-%Y", "%Y.%m.%d", "%d.%m.%Y", "%m.%d.%Y"]
         for date_format in date_formats:
             try:
-                datetime.strptime(content, date_format)
+                datetime.strptime(parsed_content, date_format)
                 return True
             except ValueError:
                 continue
@@ -188,8 +193,12 @@ class OneOfEntry(Entry):
         Returns:
             bool: True if the answer is one of the options, False otherwise
         """
-        content = content.text if isinstance(content, Message) else content.data
-        return content in self.options
+        parsed_content = content.text if isinstance(content, Message) else content.data
+        if not parsed_content:
+            return False
+        if not self.options:
+            raise ValueError("Options not provided")
+        return parsed_content in self.options
 
 
 class UrlEntry(Entry):
@@ -212,36 +221,36 @@ class UrlEntry(Entry):
         Returns:
             bool: True if the answer is a url, False otherwise
         """
-        content = content.text if isinstance(content, Message) else content.data
+        parsed_content = content.text if isinstance(content, Message) else content.data
         try:
-            check = urlparse(content)
+            check = urlparse(parsed_content)
             return all([check.scheme, check.netloc])
         except:
             return False
 
 
-class FileEntry(Entry):
-    """Class to represent a file entry in the form.
+# class FileEntry(Entry):
+#     """Class to represent a file entry in the form.
 
-    Args:
-        title (str): Title of the entry
-        incorrect (str): Message to display when the answer is incorrect
-        description (str, optional): Description of the entry. Defaults to None.
-    """
+#     Args:
+#         title (str): Title of the entry
+#         incorrect (str): Message to display when the answer is incorrect
+#         description (str, optional): Description of the entry. Defaults to None.
+#     """
 
-    base_type = type
+#     base_type = type
 
-    async def validate_answer(self, content: Message | CallbackQuery) -> bool:
-        """Checks if the answer is a file.
+#     async def validate_answer(self, content: Message | CallbackQuery) -> bool:
+#         """Checks if the answer is a file.
 
-        Args:
-            content (str): Answer to the entry
+#         Args:
+#             content (str): Answer to the entry
 
-        Returns:
-            bool: True if the answer is a file, False otherwise
-        """
-        try:
-            content = content.document.file_id
-        except AttributeError:
-            return False
-        return content is not None
+#         Returns:
+#             bool: True if the answer is a file, False otherwise
+#         """
+#         try:
+#             content = content.document.file_id
+#         except AttributeError:
+#             return False
+#         return content is not None
