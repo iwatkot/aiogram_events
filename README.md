@@ -5,7 +5,8 @@ A simple way to catch and process events in the aiogram library.
 
 <p align="center">
     <a href="#Overview">Overview</a> •
-    <a href="#Quick-Start">Quick Start</a> •
+    <a href="Quick-Start">Quick Start</a> •
+    <a href="#Core-Components">Core Components</a> •
     <a href="#Tutorial">Tutorial</a> •
     <a href="#Bugs-and-Feature-Requests">Bugs and Feature Requests</a> •
     <a href="https://pypi.org/project/aiogram_events/">PyPI</a>
@@ -22,6 +23,184 @@ A simple way to catch and process events in the aiogram library.
 </div>
 
 ## Overview
+The `aiogram_events` library is a simple way to catch and process events in the `aiogram` library, including menus and multi-step forms. It's designed to simplify the process of creating bots and to make the code more readable and maintainable.<br>
+
+## Quick Start
+**Step 1:** Install the library.<br>
+```bash
+pip install aiogram_events
+```
+ℹ️ The library supports only `aigoram` >= 3.0.0 and Python >= 3.10.0.<br>
+
+**Step 2:** Import library routers and add them to the bot.<br>
+```python
+from aiogram_events import event_router, stepper_router
+
+dp.include_routers(event_router, stepper_router)
+```
+ℹ️ Order matters! The event router should be added before the stepper router in most cases.<br>
+
+**Step 3:** Create events.<br>
+For text events:
+```python
+from aiogram_events import TextEvent
+
+class MainMenuEvent(TextEvent):
+    _button = BUTTON_MAIN_MENU
+    _answer = "Now you are in the main menu."
+    _menu = [BUTTON_FORM, BUTTON_MAIN_MENU]
+    _admin_menu = [BUTTON_OPTIONS, BUTTON_FORM, BUTTON_MAIN_MENU]
+```
+
+For callback events:
+
+```python
+from aiogram_events import CallbackEvent, Team
+from aiogram_events.stepper import NumberEntry
+
+class AddAdmin(CallbackEvent):
+    _callback = "admin__add_admin"
+    _data_type = int
+    _complete = "Admin added."
+
+    _entries = [
+        NumberEntry("Telegram ID", "Incorrect user ID.", "Enter the user Telegram ID to add it.")
+    ]
+
+    async def process(self) -> None:
+        await super().process(main_menu=BUTTON_MAIN_MENU, cancel=BUTTON_CANCEL, skip=BUTTON_SKIP)
+        if self.answers not in Team.admins:
+            Team.admins.append(self.answers)
+```
+Short explanation:
+- `_button` - the button that will trigger the event.
+- `_answer` - the message that the bot will send to the user.
+- `_menu` - a list of buttons that will be displayed to the user after the message.
+- `_admin_menu` - a list of buttons that will be displayed to the user if the user is an admin.
+- `_callback` - the prefix for the callback that will trigger the event.
+- `_data_type` - the type of data that comes with the callback.
+- `_complete` - the message to be sent to the user after the form is completed.
+- `_entries` - a list of `Entry` objects that will start a multi-step form.
+- `process()` - a method that will be called when the event is triggered, should be reimplemented in the event class. If the event contains a form, don't forget to call the `super().process()` method to start and process the form (or reimplement this logic manually).
+
+**Step 4:** Group events (optional).<br>
+```python
+from aiogram_events import TextEventGroup, CallbackEventGroup
+
+class StartGroup(TextEventGroup):
+    _events = [StartEvent, MainMenuEvent]
+
+class AdminsCallbacksGroup(CallbackEventGroup):
+    _events = [AddAdmin, RemoveAdmin]
+    _prefix = "admin__"
+```
+Short explanation:
+- `_events` - a list of events that belong to this group.
+- `_prefix` - the prefix for the callbacks that will trigger the events in this group.
+
+ℹ️ Grouping events does not change the behavior of the bot or make it faster, it's just a way to organize your code.
+
+**Step 5:** Register events.<br>
+```python
+from aiogram_events.decorators import text_events, callback_events
+
+@text_events(StartGroup)
+async def start(event: TextEvent) -> None:
+    await event.reply()
+    await event.process()
+
+@callback_events(AdminsCallbacksGroup)
+async def admins_callbacks(event: CallbackEvent) -> None:
+    await event.reply()
+    await event.process()
+```
+
+ℹ️ Of course, you can add more methods to the individual events and handle them as you like. The decorators will just catch the event and pass it to the function. All other things are up to you.
+
+**Step 6:** Check out the tutorial and read the docs.<br>
+You can find a detailed tutorial in [this section](#Tutorial) and the detailed docs in the corresponding package directories.
+
+## Core Components
+You'll find detailed docs with usage examples in the corresponding package directories:
+- [Decorators](aiogram_events/decorators/README.md)
+- [Event](aiogram_events/event/README.md)
+- [Stepper](aiogram_events/stepper/README.md)
+
+The library is based on three main components: `Event` and `EventGroup` - which represent a single event and a group of events, `Stepper` - which is used for multi-step forms and the decorators that are used to register events.
+
+### Event
+`Event` is a base class for all events. It contains the main logic for catching and processing events. You can inherit from this class to create custom events, but it's recommended to use as a parent class one of the following classes: `TextEvent` or `CallbackEvent`. These classes are designed to work with text and callback events respectively.
+
+#### TextEvent
+These events are triggered by text messages when the text of the message matches the `_button` attribute of the event. The `TextEvent` class has the following attributes:
+
+|     Attribute      |        Required         |                         Description                                             |
+| :----------------: | :----------------------:|:------------------------------------------------------------------------------: |
+|      `_button`     |           ✅            | The button that will trigger the event.                                         |
+|      `_answer`     |           *️⃣            | The message that the bot will send to the user, required if `_menu` is set.     |
+|       `_menu`      |           ❌            | A list of buttons that will be displayed to the user.                           |
+|   `_complete`      |           *️⃣            | The message to be sent to the user after the form is completed. Required if `_entries` is set. |
+|     `_entries`     |           ❌            | A list of `Entry` objects that will start a multi-step form.           |
+
+✅ - required<br>
+❌ - optional<br>
+*️⃣ - required for specific conditions.<br>         
+
+#### CallbackEvent
+These events are triggered by inline buttons when the callback of the button starts with the `_callback` attribute of the event. The `CallbackEvent` class has the following attributes:
+
+|     Attribute      |        Required         |                         Description                                             |
+| :----------------: | :----------------------:|:------------------------------------------------------------------------------: |
+|    `_callback`     |           ✅            | The prefix for the callback that will trigger the event.                        |
+|    `_data_type`    |           ✅            | The type of data that comes with the callback.                                  |
+|     `_answer`      |           *️⃣            | The message that the bot will send to the user.                                 |
+|     `_menu`        |           ❌            | A list of buttons that will be displayed to the user.                           |
+|   `_complete`      |           *️⃣            | The message to be sent to the user after the form is completed. Required if `_entries` is set. |
+|     `_entries`     |           ❌            | A list of `Entry` objects that will start a multi-step form.           |
+
+✅ - required<br>
+❌ - optional<br>
+*️⃣ - required for specific conditions.<br>
+
+
+### EventGroup
+To work with multiple events in one function, you can use one of the following classes: `TextEventGroup` or `CallbackEventGroup`. These classes are used to group events that are related to each other.
+
+#### TextEventGroup
+This class is used to group text events. It has the following attributes:
+
+|     Attribute      |        Required         |                         Description                                             |
+| :----------------: | :----------------------:|:------------------------------------------------------------------------------: |
+|     `_events`      |           ✅            | A list of events that belong to this group.                                     |
+
+✅ - required<br>
+
+#### CallbackEventGroup
+This class is used to group callback events. It has the following attributes:
+
+|     Attribute      |        Required         |                         Description                                             |
+| :----------------: | :----------------------:|:------------------------------------------------------------------------------: |
+|     `_events`      |           ✅            | A list of events that belong to this group.                                     |
+|     `_prefix`      |           ✅            | The prefix for the callbacks that will trigger the events in this group.        |
+
+✅ - required<br><br>
+
+ℹ️ It's important to use the same prefix for all events in the group, otherwise, the events won't be triggered correctly.
+
+### Stepper
+You don't need to work with the `Stepper` class directly, but you can use the `Entry` class to create custom entries or use the built-in entries e.g. `TextEntry` or `NumberEntry`. If you need to add some custom logic to the `Stepper` class, you can inherit from it and reimplement the required methods.
+
+#### Entry
+The library contains several built-in entries that can be used to create forms. To create a custom entry, you need to inherit from the `Entry` class, add the `base_type` attribute to it and reimplement the `validate_answer()` method. The attribute is a type to which the answer will be converted. The method should return the boolean value, `True` if the answer is correct and `False` otherwise.
+
+### Decorators
+The decorators are used to register events in the bot and to restrict access to the events by user role. The library contains the following decorators:
+- `@text_event` - to register a single text event.
+- `@text_events` - to register a group of text events.
+- `@callback_event` - to register a single callback event.
+- `@callback_events` - to register a group of callback events.
+- `@admin_only` - to allow access to the event only for admin users.
+- `@moderator_admin_only` - to allow access to the event only for moderator and admin users.
 
 ## Tutorial
 In this step-by-step guide, you will learn how to create a simple bot from scratch using `aiogram_events`.<br>
@@ -456,5 +635,11 @@ if __name__ == "__main__":
 
 </details>
 
-Now, let's launch our bot and take a look at how it works.<br>
-[![Watch the video](https://github.com/iwatkot/aiogram_events/assets/118521851/a920f5f6-622b-4c64-868d-1d87a921d34c)](https://github.com/iwatkot/aiogram_events/assets/118521851/ff2b0fc7-9812-4463-a16e-9da483f4a4ef)
+Now, let's launch our bot and take a look at how it works.<br><br>
+[![Watch the video](https://github.com/iwatkot/aiogram_events/assets/118521851/405c808d-a9c3-45d2-b0d9-23939f55e14f)](https://github.com/iwatkot/aiogram_events/assets/118521851/ff2b0fc7-9812-4463-a16e-9da483f4a4ef)
+
+<br>
+
+## Bugs and Feature Requests
+If you find a bug or have a feature request, please open an issue on the GitHub repository.<br>
+You're also welcome to contribute to the project by opening a pull request.
