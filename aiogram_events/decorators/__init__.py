@@ -1,3 +1,4 @@
+# pylint: disable=missing-module-docstring
 from aiogram_events.decorators.decorators import (
     admin_only,
     callback_event,
