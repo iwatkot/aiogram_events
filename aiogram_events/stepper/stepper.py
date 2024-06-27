@@ -15,6 +15,7 @@ from aiogram_events.utils.utils import get_form, reply_keyboard
 router = Router()
 
 
+# pylint: disable=R0902, R0913
 class Stepper:
     """Represents an object, that is used to guide the user through a form with multiple steps.
     Operates with a list of Entry objects, that are used to generate a form with aiogram.
@@ -118,7 +119,7 @@ class Stepper:
             value (FSMContext): The new FSMContext object of the Stepper.
         """
         self._state = value
-        self.match_step()
+        self._match_step()
 
     @property
     def entries(self) -> list[Entry]:
@@ -240,13 +241,13 @@ class Stepper:
             ValueError: If the Stepper is already started.
         """
         if self.step == 0:
-            await self.forward()
-            return await self.register()
+            await self._forward()
+            return await self._register()
 
-    async def forward(self) -> None:
+    async def _forward(self) -> None:
         """Moves the Stepper to the next step and sends the answer to the user."""
         await self.send_answer()
-        await self.update_state()
+        await self._update_state()
         self.step += 1
 
     async def validate(self, content: Message | CallbackQuery) -> bool:
@@ -270,7 +271,7 @@ class Stepper:
             return False
         return True
 
-    async def update(self, content: Message | CallbackQuery, state: FSMContext) -> None:
+    async def _update(self, content: Message | CallbackQuery, state: FSMContext) -> None:
         """Updates the Stepper with the new content and state.
 
         Args:
@@ -287,11 +288,11 @@ class Stepper:
 
     async def close(self) -> None:
         """Closes the Stepper and saves the results."""
-        await self.process_data()
+        await self._process_data()
         await self.content.answer(self.complete, reply_markup=reply_keyboard([self.main_menu]))
         await self.state.clear()
 
-    async def process_data(self) -> None:
+    async def _process_data(self) -> None:
         """Processes the data from the state and saves the results.
         Removes the unique ID of the Stepper from the keys and skips the data with the skip button.
         """
@@ -309,7 +310,7 @@ class Stepper:
         await self.results_ready.wait()
         return self.results
 
-    async def update_state(self) -> None:
+    async def _update_state(self) -> None:
         """Updates the state of the Stepper with the current step."""
         await self.state.set_state(getattr(self.form, f"{self.id}{self.entry.title}"))
 
@@ -320,7 +321,7 @@ class Stepper:
         if entry.skippable:
             buttons.append(self.skip)
         buttons.append(self.cancel)
-        text = self.prepare_text()
+        text = self._prepare_text()
         await self.content.answer(text, reply_markup=reply_keyboard(buttons))
 
     @property
@@ -334,7 +335,7 @@ class Stepper:
         ended = self.step == len(self.entries)
         return ended
 
-    def prepare_text(self) -> str:
+    def _prepare_text(self) -> str:
         """Prepares the text of the message that is sent to the user using the current Entry object.
 
         Returns:
@@ -347,7 +348,7 @@ class Stepper:
         return text
 
     @property
-    def keyword(self) -> str | None:
+    def _keyword(self) -> str | None:
         """Returns the keyword of the current Entry object, it's used to save the data in the state.
 
         Returns:
@@ -358,7 +359,7 @@ class Stepper:
         return self.state_code.split(":")[1]
 
     @property
-    def details(self) -> str | None:
+    def _details(self) -> str | None:
         """Returns the content of the current content object.
         For Message objects, it's the text of the message, for CallbackQuery objects,
         it's the data of the query.
@@ -370,8 +371,9 @@ class Stepper:
         #     return self.content.document.file_id
         if isinstance(self.content, Message):
             return self.content.text
-        elif isinstance(self.content, CallbackQuery):
+        if isinstance(self.content, CallbackQuery):
             return self.content.data
+        return None
 
     @property
     def data(self) -> dict[str, Any] | None:
@@ -381,34 +383,42 @@ class Stepper:
         Returns:
             dict[str, str]: The pair of key-value data.
         """
-        if not self.keyword or not self.details:
+        if not self._keyword or not self._details:
             return None
-        return {self.keyword: self.details}
+        return {self._keyword: self._details}
 
-    def match_step(self) -> None:
+    def _match_step(self) -> None:
         """Updates the step of the Stepper based on the current state of the Stepper."""
         for idx, title in enumerate(self.steps):
             if self.state_code == getattr(self.form, title):
                 self.step = idx + 1
 
-    async def register(self):
+    async def _register(self):
         """Registers the Stepper with aiogram and starts the form."""
 
-        @self.form_handlers(self.steps)
+        @self._form_handlers(self.steps)
         async def steps(content: Message | CallbackQuery, state: FSMContext) -> None:
             if not await self.validate(content):
                 return
 
-            await self.update(content, state)
+            await self._update(content, state)
 
             if self.ended:
                 await self.close()
                 return
 
-            await self.forward()
+            await self._forward()
 
     @staticmethod
-    def form_handlers(steps: list[str]) -> Callable:
+    def _form_handlers(steps: list[str]) -> Callable:
+        """Decorator to register the Stepper with aiogram.
+
+        Args:
+            steps (list[str]): A list of step names of the Stepper.
+
+        Returns:
+            Callable: Decorator.
+        """
         attributes = [getattr(get_form(steps), step) for step in steps]
 
         def decorator(func: Callable) -> Callable:
