@@ -1,8 +1,5 @@
 # Only for development:
 mypy
-pytest
-pytest-cov
-pytest-asyncio
 python-dotenv
 pylint
 pydoc-markdown
