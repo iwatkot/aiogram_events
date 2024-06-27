@@ -1,3 +1,5 @@
+"""This module contains the Stepper class, which is used to handle multi-step forms."""
+
 import asyncio
 import uuid
 from typing import Any, Callable, Type
@@ -16,17 +18,16 @@ router = Router()
 class Stepper:
     """Represents an object, that is used to guide the user through a form with multiple steps.
     Operates with a list of Entry objects, that are used to generate a form with aiogram.
-    On each step, the Stepper sends a message with the title of the current Entry and optional description.
+    On each step, the Stepper sends a message with the title of the current Entry.
     After the user provides an answer, the Stepper validates it and moves to the next step.
     If validation fails, the Stepper sends an error message and waits for a valid answer.
     After the last step, the Stepper saves the results and sends a completion message.
 
     Args:
-        content (Message | CallbackQuery): The message or callback query that triggered the Stepper.
+        content (Message | CallbackQuery): The message or callback query that triggered Stepper.
         state (FSMContext): The FSMContext object that is used to store the data.
         entries (list[Entry] | None): A list of Entry objects that are used to generate the form.
         complete (str | None): A message that is sent after the last step is completed.
-        template (Template | None): A Template object that is used to generate the form.
     """
 
     def __init__(
@@ -47,11 +48,12 @@ class Stepper:
 
         # Content is the message or callback query that triggered the Stepper.
         # It will be overwritten with new content when the Stepper moves forward.
-        # Or in will be preserved in the case of an error, when Stepper is waiting for a valid answer.
+        # Or in will be preserved in the case of an error,
+        # when Stepper is waiting for a valid answer.
         self._content = content
 
-        # While state is a FSMContext object, state_code is a string representation of the current state
-        # which is used to match the current step of the Stepper and access the data
+        # While state is a FSMContext object, state_code is a string representation of the current
+        # state which is used to match the current step of the Stepper and access the data
         # the actual state objects from the form.
         self._state = state
         self._state_code: str | None = None
@@ -81,7 +83,8 @@ class Stepper:
 
     @property
     def content(self) -> Message | CallbackQuery:
-        """Returns the content of the Stepper, which is the message or callback query that triggered it.
+        """Returns the content of the Stepper, which is the message or callback query that
+        triggered it.
 
         Returns:
             Message | CallbackQuery: The content of the Stepper.
@@ -108,8 +111,8 @@ class Stepper:
 
     @state.setter
     def state(self, value: FSMContext) -> None:
-        """Sets the FSMContext object of the Stepper to a new value and updates the step of the Stepper
-        relative to the new state.
+        """Sets the FSMContext object of the Stepper to a new value and updates the step of the
+        Stepper relative to the new state.
 
         Args:
             value (FSMContext): The new FSMContext object of the Stepper.
@@ -146,7 +149,7 @@ class Stepper:
 
     @property
     def steps(self) -> list[str]:
-        """Returns the list of step names of the Stepper, which are used to register the Stepper with aiogram.
+        """Returns the list of step names of the Stepper, which are used to register the Stepper.
         Each step name is a combination of the unique ID of the Stepper and the title of the Entry.
 
         Returns:
@@ -156,7 +159,7 @@ class Stepper:
 
     @property
     def form(self) -> Type[StatesGroup]:
-        """Returns the StatesGroup object of the Stepper, which is used to register the Stepper with aiogram.
+        """Returns the StatesGroup object of the Stepper, which is used to register the Stepper.
 
         Returns:
             StatesGroup: The StatesGroup object of the Stepper.
@@ -202,7 +205,8 @@ class Stepper:
     @property
     def results(self) -> dict[str, int | str] | None:
         """Returns the results of the Stepper, which are stored in a dictionary.
-        The results are only available after the Stepper is closed and the results_ready event is set.
+        The results are only available after the Stepper is closed and the results_ready
+        event is set.
 
         Returns:
             dict[str, str]: The results of the Stepper.
@@ -221,7 +225,8 @@ class Stepper:
 
     @property
     def complete(self) -> str:
-        """Returns the completion message of the Stepper, which is sent after the last step is completed.
+        """Returns the completion message of the Stepper, which is sent after the last step
+        is completed.
 
         Returns:
             str: The completion message of the Stepper.
@@ -249,7 +254,8 @@ class Stepper:
         For validation, the Stepper uses the validate_answer method of the previous Entry object.
 
         Args:
-            content (Message | CallbackQuery): The message or callback query that triggered the Stepper.
+            content (Message | CallbackQuery): The message or callback query that triggered
+            the Stepper.
 
         Returns:
             bool: True if the answer is correct, False otherwise.
@@ -354,7 +360,8 @@ class Stepper:
     @property
     def details(self) -> str | None:
         """Returns the content of the current content object.
-        For Message objects, it's the text of the message, for CallbackQuery objects, it's the data of the query.
+        For Message objects, it's the text of the message, for CallbackQuery objects,
+        it's the data of the query.
 
         Returns:
             str: The content of the current content object.
