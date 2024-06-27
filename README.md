@@ -5,7 +5,7 @@ A simple way to catch and process events in the aiogram library.
 
 <p align="center">
     <a href="#Overview">Overview</a> •
-    <a href="Quick-Start">Quick Start</a> •
+    <a href="#Quick-Start">Quick Start</a> •
     <a href="#Core-Components">Core Components</a> •
     <a href="#Tutorial">Tutorial</a> •
     <a href="#Bugs-and-Feature-Requests">Bugs and Feature Requests</a> •
