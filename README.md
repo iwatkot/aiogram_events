@@ -457,5 +457,4 @@ if __name__ == "__main__":
 </details>
 
 Now, let's launch our bot and take a look at how it works.<br>
-<video src="https://github.com/iwatkot/aiogram_events/assets/118521851/ff2b0fc7-9812-4463-a16e-9da483f4a4ef"controls>
-</video>
+[![Watch the video](https://github.com/iwatkot/aiogram_events/assets/118521851/a920f5f6-622b-4c64-868d-1d87a921d34c)](https://github.com/iwatkot/aiogram_events/assets/118521851/ff2b0fc7-9812-4463-a16e-9da483f4a4ef)
