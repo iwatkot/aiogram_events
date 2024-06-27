@@ -17,6 +17,8 @@ class Team:
     It's recommended to change the way of storing the user IDs based on the project requirements.
     And reimplement the is_admin and is_moderator methods in the child class of BaseEvent.
     But still, you can use this class as is.
+    NOTE: This class won't somehow back up the user IDs, so if the bot restarts,
+    the user IDs will be lost. Therefore, it's not recommended to use this class in production.
 
     Example:
         ```python
@@ -105,7 +107,9 @@ class BaseEvent:
 
     def _check_user(self) -> None:
         """Check required user roles and sets corresponding attributes.
-        It's recommended to reimplement this method in the child class.
+        It can be reimplemented in the child class to set the user roles based on the
+        project requirements.
+        NOTE: If you'll add custom roles, you'll also need to reimplement the role_menu property.
         """
         self._by_admin = self.is_admin(self.user_id)
         self._by_moderator = self.is_moderator(self.user_id)
