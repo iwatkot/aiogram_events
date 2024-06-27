@@ -19,7 +19,7 @@ A simple way to catch and process events in the aiogram library.
 ![PyPI - Downloads](https://img.shields.io/pypi/dm/aiogram_events)<br>
 ![PyPI - Python Version](https://img.shields.io/pypi/pyversions/aiogram_events)
 ![PyPI - Version](https://img.shields.io/pypi/v/aiogram_events)
-[![Maintainability]()]()
+[![Maintainability](https://api.codeclimate.com/v1/badges/7eba14b75914b09a4d50/maintainability)](https://codeclimate.com/github/iwatkot/aiogram_events/maintainability)
 </div>
 
 ## Overview
