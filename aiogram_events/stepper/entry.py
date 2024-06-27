@@ -1,6 +1,4 @@
 from datetime import datetime
-from types import MethodType
-from typing import Callable
 from urllib.parse import urlparse
 
 from aiogram.types import CallbackQuery, Message
