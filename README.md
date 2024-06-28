@@ -1,5 +1,5 @@
 <div align="center" markdown>
-<img src="">
+<img src="https://github.com/iwatkot/aiogram_events/assets/118521851/8719b400-7778-4c25-94db-030d6c98c3fd">
 
 A simple way to catch and process events in the aiogram library.
 
