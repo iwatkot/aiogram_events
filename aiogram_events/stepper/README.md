@@ -439,6 +439,44 @@ Checks if the answer is a url.
 
 - `bool` - True if the answer is a url, False otherwise
 
+<a id="stepper.entry.FileEntry"></a>
+
+## FileEntry Objects
+
+```python
+class FileEntry(Entry)
+```
+
+Class to represent a file entry in the form.
+
+**Example**:
+
+    ```python
+    from aiogram_events.stepper import FileEntry
+
+    resume_entry = FileEntry(
+        "Resume", "Please upload a valid resume", skippable=True)
+    ```
+
+<a id="stepper.entry.FileEntry.validate_answer"></a>
+
+#### validate\_answer
+
+```python
+async def validate_answer(content: Message | CallbackQuery) -> bool
+```
+
+Checks if the answer is a file.
+
+**Arguments**:
+
+- `content` _str_ - Answer to the entry
+  
+
+**Returns**:
+
+- `bool` - True if the answer is a file, False otherwise
+
 <a id="stepper.stepper"></a>
 
 # stepper.stepper
