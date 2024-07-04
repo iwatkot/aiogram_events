@@ -54,9 +54,7 @@ def buttons_per_row(buttons: int) -> int:
 
     Returns:
         int: Number of buttons per row"""
-    if buttons % 3 == 0 or buttons % 2 == 0:
-        return buttons // 2 if buttons > 2 else buttons
-    return buttons // 2 + buttons % 2
+    return (buttons - 1) // 3 + 1 if buttons <= 9 else 4
 
 
 class FormMeta(type):
