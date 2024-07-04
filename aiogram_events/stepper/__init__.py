@@ -2,6 +2,7 @@
 from aiogram_events.stepper.entry import (  # FileEntry,
     DateEntry,
     Entry,
+    FileEntry,
     NumberEntry,
     OneOfEntry,
     TextEntry,

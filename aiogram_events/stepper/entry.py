@@ -329,28 +329,31 @@ class UrlEntry(Entry):
             return False
 
 
-# class FileEntry(Entry):
-#     """Class to represent a file entry in the form.
+class FileEntry(Entry):
+    """Class to represent a file entry in the form.
 
-#     Args:
-#         title (str): Title of the entry
-#         incorrect (str): Message to display when the answer is incorrect
-#         description (str, optional): Description of the entry. Defaults to None.
-#     """
+    Example:
+        ```python
+        from aiogram_events.stepper import FileEntry
 
-#     base_type = type
+        resume_entry = FileEntry(
+            "Resume", "Please upload a valid resume", skippable=True)
+        ```
+    """
 
-#     async def validate_answer(self, content: Message | CallbackQuery) -> bool:
-#         """Checks if the answer is a file.
+    base_type = type
 
-#         Args:
-#             content (str): Answer to the entry
+    async def validate_answer(self, content: Message | CallbackQuery) -> bool:
+        """Checks if the answer is a file.
 
-#         Returns:
-#             bool: True if the answer is a file, False otherwise
-#         """
-#         try:
-#             content = content.document.file_id
-#         except AttributeError:
-#             return False
-#         return content is not None
+        Args:
+            content (str): Answer to the entry
+
+        Returns:
+            bool: True if the answer is a file, False otherwise
+        """
+        try:
+            content = content.document.file_id  # type: ignore
+        except AttributeError:
+            return False
+        return content is not None

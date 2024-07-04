@@ -4,7 +4,7 @@ build-backend = "setuptools.build_meta"
 
 [project]
 name = "aiogram_events"
-version = "0.1.0"
+version = "0.2.0"
 description = "A simple way to catch and process events in the aiogram library."
 authors = [{name = "iwatkot", email = "iwatkot@gmail.com"}]
 license = {text = "MIT License"}
