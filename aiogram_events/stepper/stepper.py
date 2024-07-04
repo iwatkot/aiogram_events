@@ -9,7 +9,7 @@ from aiogram.fsm.context import FSMContext
 from aiogram.fsm.state import StatesGroup
 from aiogram.types import CallbackQuery, Message
 
-from aiogram_events.stepper.entry import Entry  # , FileEntry
+from aiogram_events.stepper.entry import Entry, FileEntry
 from aiogram_events.utils.utils import get_form, reply_keyboard
 
 router = Router()
@@ -362,13 +362,14 @@ class Stepper:
     def _details(self) -> str | None:
         """Returns the content of the current content object.
         For Message objects, it's the text of the message, for CallbackQuery objects,
-        it's the data of the query.
+        it's the data of the query. For FileEntry objects, it's the file_id of the document,
+        which can be used to download the file.
 
         Returns:
             str: The content of the current content object.
         """
-        # if isinstance(self.previous_entry, FileEntry):
-        #     return self.content.document.file_id
+        if isinstance(self.previous_entry, FileEntry):
+            return self.content.document.file_id  # type: ignore
         if isinstance(self.content, Message):
             return self.content.text
         if isinstance(self.content, CallbackQuery):
